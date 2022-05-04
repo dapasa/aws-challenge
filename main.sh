@@ -13,10 +13,17 @@ apt-get update
 echo .
 echo .
 
-docker ps /dev/null 2>&1
+docker ps > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "### Docker is not installed in the system. Installing... ###"
     yes | apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    sudo service docker start
+    docker ps > /dev/null 2>&1
+    if [ $? -ne 0]; then
+        echo "### A problem ocurred while trying to check the docker service runnin."
+        echo .
+        echo . 
+    fi
     echo .
     echo .
 else
