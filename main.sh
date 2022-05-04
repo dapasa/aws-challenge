@@ -1,8 +1,4 @@
 #!/bin/dash
-echo "### Removing docker ###"
-apt-get remove docker docker-engine docker.io containerd runc
-echo .
-echo .
 echo "### Update and install deps ###"
 apt-get update && apt-get install -y gnupg software-properties-common curl ca-certificates gnupg lsb-release
 echo .
@@ -16,9 +12,18 @@ echo "### Update deps ###"
 apt-get update
 echo .
 echo .
-echo "### Installing Docker ###"
-yes | apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
-echo .
-echo .
+
+docker ps /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "### Docker is not installed in the system. Installing... ###"
+    yes | apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    echo .
+    echo .
+else
+    echo "### Docker is installed in the system. ###"
+    echo .
+    echo .
+fi
+
 echo "### Bulding nginx-custom-content Image ###"
 docker build --no-cache -t nginx-custom-content .
