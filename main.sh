@@ -3,7 +3,7 @@
 DockerPgPFILE=/usr/share/keyrings/docker-archive-keyring.gpg
 
 echo "### Update and install deps ###"
-apt-get update && apt-get install -y gnupg software-properties-common curl ca-certificates gnupg lsb-release unzip
+apt-get update && apt-get install -y gnupg software-properties-common curl ca-certificates gnupg lsb-release unzip jq
 echo .
 echo .
 echo "### Seting up repos ###"
@@ -48,13 +48,39 @@ if [ $? -ne 0 ]; then
     echo "### Terraform is not installed. Installing"
     apt-get install terraform
 fi
-
-echo "### installing AWS CCLI ###"
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-./aws/install
-
 echo .
 echo .
-echo "### Bulding nginx-custom-content Image ###"
-docker build --no-cache -t nginx-custom-content .
+aws --help > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo "### AWS CLI is not installed. Installing"
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install
+    
+fi
+# echo "### Exporting AWS Credential"
+# ./loadEnv.sh
+echo .
+echo .
+echo "### Initiating AWS configuration###"
+aws configure
+echo .
+echo .
+echo "### Initiating Terraform ###"
+terraform init
+echo .
+echo .
+echo "### Terraform Planing ###"
+terraform plan
+echo .
+echo .
+echo "### Applying Terraform Plan ###"
+terraform apply
+echo .
+echo .
+echo "### Bulding nginx_custom_content Image ###"
+accountID=`aws sts get-caller-identity | jq -r '.Account'`
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${accountID}.dkr.ecr.us-east-1.amazonaws.com
+docker build --no-cache -t nginx_custom_content .
+docker tag nginx_custom_content:latest ${accountID}.dkr.ecr.us-east-1.amazonaws.com/nginx_custom_content:latest
+docker push ${accountID}.dkr.ecr.us-east-1.amazonaws.com/nginx_custom_content:latest
