@@ -1,9 +1,4 @@
 terraform {
-    variable "DEFAULT_REGION" {
-        type        = string
-        description = "Default Cloud Region"
-    }
-
     required_providers {
         aws = {
         source  = "hashicorp/aws"
@@ -15,7 +10,7 @@ terraform {
 
     provider "aws" {
         profile = "default"
-        region  = var.DEFAULT_REGION
+        region  = "us-east-1"
     }
 
     resource "aws_ecr_repository" "aws_challenge_repo" {
