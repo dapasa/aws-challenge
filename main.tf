@@ -1,172 +1,127 @@
 terraform {
-    required_providers {
-        aws = {
-            source  = "hashicorp/aws"
-            version = "~> 4.12.1"
-        }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.12.1"
     }
+  }
 
-    required_version = ">= 0.14.9"
+  required_version = ">= 0.14.9"
 }
 
 provider "aws" {
-  region  = "us-east-1"
+  region = var.region
 }
 
-resource "aws_ecr_repository" "nginx_custom_content" {
-  name = "nginx_custom_content"
-}
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
 
-resource "aws_ecs_cluster" "nginx_custom_content_cluster" {
-  name = "nginx_custom_content_cluster"
-}
+  name = "${var.project_name}-vpc"
+  cidr = "10.0.0.0/16"
 
-resource "aws_ecs_task_definition" "nginx_custom_content_task" {
-  family                   = "nginx_custom_content_task" # Naming our first task
-  container_definitions    = <<DEFINITION
-  [
-    {
-      "name": "nginx_custom_content_task",
-      "image": "${aws_ecr_repository.nginx_custom_content.repository_url}",
-      "essential": true,
-      "portMappings": [
-        {
-          "containerPort": 80,
-          "hostPort": 80
-        }
-      ],
-      "memory": 512,
-      "cpu": 256
-    }
-  ]
-  DEFINITION
-  requires_compatibilities = ["FARGATE"] 
-  network_mode             = "awsvpc"    
-  memory                   = 512         
-  cpu                      = 256         
-  execution_role_arn       = "${aws_iam_role.ecsTaskExecutionRole.arn}"
-}
+  azs             = var.availability_zones
+  private_subnets = var.priv_ips
+  public_subnets  = var.pub_ips
 
-resource "aws_iam_role" "ecsTaskExecutionRole" {
-  name               = "ecsTaskExecutionRole"
-  assume_role_policy = "${data.aws_iam_policy_document.assume_role_policy.json}"
-}
+  enable_nat_gateway = false
+  enable_vpn_gateway = false
 
-data "aws_iam_policy_document" "assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecsTaskExecutionRole_policy" {
-  role       = "${aws_iam_role.ecsTaskExecutionRole.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
+module "security_group" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "~> 4.0"
 
-resource "aws_default_vpc" "default_vpc" {
-}
+  name        = "${var.project_name}-sg"
+  description = "Security group for EC2 instances"
+  vpc_id      = module.vpc.vpc_id
 
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  ingress_rules       = ["http-80-tcp", "all-icmp", "ssh-tcp"]
+  egress_rules        = ["all-all"]
 
-resource "aws_default_subnet" "default_subnet_a" {
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_default_subnet" "default_subnet_b" {
-  availability_zone = "us-east-1b"
-}
-
-resource "aws_ecs_service" "nginx_custom_content_service" {
-  name            = "nginx_custom_content_service"                 
-  cluster         = "${aws_ecs_cluster.nginx_custom_content_cluster.id}"             
-  task_definition = "${aws_ecs_task_definition.nginx_custom_content_task.arn}"
-  launch_type     = "FARGATE"
-  desired_count   = 2
-
-  load_balancer {
-    target_group_arn = "${aws_lb_target_group.target_group.arn}" # Referencing our target group
-    container_name   = "${aws_ecs_task_definition.nginx_custom_content_task.family}"
-    container_port   = 3000 # Specifying the container port
-  }
-
-  network_configuration {
-    subnets          = ["${aws_default_subnet.default_subnet_a.id}", "${aws_default_subnet.default_subnet_b.id}"]
-    assign_public_ip = true 
-    security_groups  = ["${aws_security_group.service_security_group.id}"] # Setting the security group
-  }
-
-}
-
-resource "aws_security_group" "service_security_group" {
-  ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    # Only allowing traffic in from the load balancer security group
-    security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
-  }
-
-  egress {
-    from_port   = 0 # Allowing any incoming port
-    to_port     = 0 # Allowing any outgoing port
-    protocol    = "-1" # Allowing any outgoing protocol 
-    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
   }
 }
 
-resource "aws_security_group" "load_balancer_security_group" {
-  ingress {
-    from_port   = 80 
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
-  }
+module "ec2_instance" {
+  source  = "terraform-aws-modules/ec2-instance/aws"
+  version = "~> 3.0"
 
-  egress {
-    from_port   = 0 
-    to_port     = 0 
-    protocol    = "-1" 
-    cidr_blocks = ["0.0.0.0/0"] 
+  count = 2
+  name  = "${var.project_name}-instance-${count.index}"
+
+  ami                         = var.ami
+  instance_type               = "t2.micro"
+  key_name                    = var.KeyPair
+  monitoring                  = true
+  vpc_security_group_ids      = [module.security_group.security_group_id]
+  subnet_id                   = module.vpc.public_subnets[count.index]
+  associate_public_ip_address = "true"
+
+  user_data = file("${path.module}/makeserver.sh")
+
+  tags = {
+    Terraform   = "true"
+    Environment = "dev"
   }
 }
 
-resource "aws_alb" "application_load_balancer" {
-  name               = "nginx-lb" 
+data "aws_instances" "ec2_instances_ids" {
+  instance_tags = {
+    Environment = "dev"
+  }
+}
+
+locals {
+  instance_length = length(data.aws_instances.ec2_instances_ids.ids)
+}
+
+module "alb" {
+  source  = "terraform-aws-modules/alb/aws"
+  version = "~> 6.0"
+
+  name = "alb"
+
   load_balancer_type = "application"
-  subnets = [ 
-    "${aws_default_subnet.default_subnet_a.id}",
-    "${aws_default_subnet.default_subnet_b.id}"
+
+  vpc_id          = module.vpc.vpc_id
+  subnets         = module.vpc.public_subnets
+  security_groups = [module.security_group.security_group_id]
+  target_groups = [
+    {
+      name             = "${var.project_name}-tg"
+      backend_protocol = "HTTP"
+      backend_port     = 80
+      target_type      = "instance"
+      targets = [
+        {
+          target_id = local.instance_length > 0 ? data.aws_instances.ec2_instances_ids.ids[0] : ""
+          port      = 80
+        },
+        {
+          target_id = local.instance_length > 1 ? data.aws_instances.ec2_instances_ids.ids[1] : ""
+          port      = 80
+        }
+      ]
+    }
   ]
 
-  security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
-}
+  http_tcp_listeners = [
+    {
+      port               = 80
+      protocol           = "HTTP"
+      target_group_index = 0
+    }
+  ]
 
-resource "aws_lb_target_group" "target_group" {
-  name        = "target-group"
-  port        = 80
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = "${aws_default_vpc.default_vpc.id}" # Referencing the default VPC
-  health_check {
-    matcher = "200,301,302"
-    path = "/"
+  tags = {
+    Environment = "dev"
   }
 }
-
-resource "aws_lb_listener" "listener" {
-  load_balancer_arn = "${aws_alb.application_load_balancer.arn}" # Referencing our load balancer
-  port              = "80"
-  protocol          = "HTTP"
-  default_action {
-    type             = "forward"
-    target_group_arn = "${aws_lb_target_group.target_group.arn}" # Referencing our tagrte group
-  }
-}
-
-
-
-
