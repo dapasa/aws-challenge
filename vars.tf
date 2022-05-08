@@ -31,3 +31,8 @@ variable "targets" {
   type        = map(string)
   default     = {}
 }
+
+variable "lb_name" {
+  type    = string
+  default = ""
+}

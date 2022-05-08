@@ -50,6 +50,17 @@ module "security_group" {
   }
 }
 
+data "aws_instances" "ec2_instances_ids" {
+  instance_tags = {
+    Environment = "dev"
+  }
+  depends_on = [module.ec2_instance]
+}
+
+locals {
+  instance_length = length(data.aws_instances.ec2_instances_ids.ids)
+}
+
 module "ec2_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 3.0"
@@ -71,16 +82,6 @@ module "ec2_instance" {
     Terraform   = "true"
     Environment = "dev"
   }
-}
-
-data "aws_instances" "ec2_instances_ids" {
-  instance_tags = {
-    Environment = "dev"
-  }
-}
-
-locals {
-  instance_length = length(data.aws_instances.ec2_instances_ids.ids)
 }
 
 module "alb" {
@@ -124,4 +125,11 @@ module "alb" {
   tags = {
     Environment = "dev"
   }
+
+  depends_on = [data.aws_instances.ec2_instances_ids]
+}
+
+data "aws_lb" "alb" {
+  name = var.lb_name
+  depends_on = [module.alb]
 }
