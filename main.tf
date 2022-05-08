@@ -1,3 +1,4 @@
+# Declaring Terraform Version Required
 terraform {
   required_providers {
     aws = {
@@ -9,10 +10,12 @@ terraform {
   required_version = ">= 0.14.9"
 }
 
+# Delcaring Provider
 provider "aws" {
   region = var.region
 }
 
+# Creating VPC
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -32,6 +35,7 @@ module "vpc" {
   }
 }
 
+# Creating Security Group
 module "security_group" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 4.0"
@@ -50,6 +54,7 @@ module "security_group" {
   }
 }
 
+# Getting Ids from EC2 Instances
 data "aws_instances" "ec2_instances_ids" {
   instance_tags = {
     Environment = "dev"
@@ -57,10 +62,12 @@ data "aws_instances" "ec2_instances_ids" {
   depends_on = [module.ec2_instance]
 }
 
+# Getting EC2 Instances count to use as index
 locals {
   instance_length = length(data.aws_instances.ec2_instances_ids.ids)
 }
 
+# Creating EC2 Instaces
 module "ec2_instance" {
   source  = "terraform-aws-modules/ec2-instance/aws"
   version = "~> 3.0"
@@ -84,6 +91,7 @@ module "ec2_instance" {
   }
 }
 
+# Creating a configuring Application Load Balancer
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "~> 6.0"
@@ -129,6 +137,7 @@ module "alb" {
   depends_on = [data.aws_instances.ec2_instances_ids]
 }
 
+# Getting Application Load Balancer information to show the DNS.
 data "aws_lb" "alb" {
   name = var.lb_name
   depends_on = [module.alb]

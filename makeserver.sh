@@ -39,16 +39,13 @@ if [ $rc -ne 0 ]; then
 fi
 echo . >> $log 2>&1
 echo . >> $log 2>&1
-echo "### Running Nginx Server ###" >> $log 2>&1
-echo . >> $log 2>&1
-echo . >> $log 2>&1
-echo "   ### Making host folder for Docker volume ###" >> $log 2>&1
+echo "### Making host folder for Docker volume ###" >> $log 2>&1
 mkdir -p /var/www/html >> $log 2>&1
 chmod 775 /var/www/html >> $log 2>&1
 echo . >> $log 2>&1
 echo . >> $log 2>&1
 echo "### Runing Docker container for nginx ###" >> $log 2>&1
-docker run --name some-nginx -d -p 80:80 -v /var/www/html:/usr/share/nginx/html nginx >> $log 2>&1
+docker run --name some-nginx -d -p 80:80 -v /var/www/html:/usr/share/nginx/html --restart=always nginx >> $log 2>&1
 echo . >> $log 2>&1
 echo . >> $log 2>&1
 echo "### Creating index.html ###" >> $log 2>&1
