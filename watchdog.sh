@@ -8,18 +8,27 @@ do
     HEADERS=`curl -Is --connect-timeout 5 ${2}`
     CURLSTATUS=$?
     # Check for timeout
-    if [ $CURLSTATUS -eq 28 ]
+    if [ ! -z "$HEADERS" ]
+    then
+        if [ $CURLSTATUS -eq 28 ]
         then
-            echo "Request failed"
-    else
-        # Check HTTP status code
-        HTTPSTATUS=`echo $HEADERS | grep HTTP | cut -d' ' -f2`
-        if [ $HTTPSTATUS -le 399 ]
-            then
-                echo "Request success"
+                echo "************************************************************************"
+                echo "Status code: time out"
+                echo "Request failed"
+                echo "************************************************************************"
         else
-            echo "Request failed"
+            # Check HTTP status code
+            HTTPSTATUS=`echo $HEADERS | grep HTTP | cut -d' ' -f2`
+            echo "************************************************************************"
+            echo "Status code: ${HTTPSTATUS}"
+            echo "Request success"
+            echo "************************************************************************"
         fi
+    else
+        echo "************************************************************************"
+        echo "Status code: 404" 
+        echo "Request failed"
+        echo "************************************************************************"
     fi
     sleep $1
 done
