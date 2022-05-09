@@ -31,7 +31,7 @@ Trying to cover the most of the required items, it was designed with the bellow 
 - AWS VPC with two availability zones and two public subnets (assigned one per each zone)
 - AWS ELB for Applications with a listener on 80 port and target group targeting to two AWS EC2 instances
 - Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering). Each instance have a public ip address. This was configured with public ip only for the purpose of this challenge to access on each instance without a private vpn connection.
-- Each instance have a ningx server running in docker container with a custom content. Just for the purpose of this challenge each instance shows the hostname that in this case is the private ip of each one.
+- Each instance has a ningx server running in a docker container with a custom content. Just for the purpose of this challenge each instance shows the hostname that in this case is the private ip of each one.
 - A security group to allow only the http and ssh connections
 
 this configuration that is easy to create with the execution steps described in the next topic, have a special bash script that starts the instalation and configuration for the web server.
