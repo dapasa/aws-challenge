@@ -25,6 +25,15 @@ Create a checker script for health check.
 
 #### **Design** ####
 
+Trying to cover the most of the required items, it was designed with bellow items. I will describe it in the bellow list in order from the frontend (internet) to the backend:
+
+- One internet gateway to point the inbound traffic to the VPC
+- AWS VPC with two availability zones and two public subnets (assigned one per each zone)
+- AWS ELB for Applications with a listener on 80 port and tharget group targeting two EC2 instances
+- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering) and public ip just to this challenge pourpose to access on each instace without configure a private vpn.
+- Each instance have a ningx server working in dockerized enviroment with a custom content. Just for the pourpose of this challenge each instance show the hostname that in this case is the private ip of each.
+
+
 
 #### **Execution** ####
 
