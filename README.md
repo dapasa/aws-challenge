@@ -25,14 +25,24 @@ Create a checker script for health check.
 
 #### **Design** ####
 
-Trying to cover the most of the required items, it was designed with bellow items. I will describe it in the bellow list in order from the frontend (internet) to the backend:
+Trying to cover the most of the required items, it was designed with the bellow configuration. I will describe it in the bellow list in order from the frontend (internet) to the backend (nginx server):
 
-- One internet gateway to point the inbound traffic to the VPC
+- One AWS internet gateway to point the inbound traffic to the VPC
 - AWS VPC with two availability zones and two public subnets (assigned one per each zone)
-- AWS ELB for Applications with a listener on 80 port and tharget group targeting two EC2 instances
-- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering) and public ip just to this challenge pourpose to access on each instace without configure a private vpn.
-- Each instance have a ningx server working in dockerized enviroment with a custom content. Just for the pourpose of this challenge each instance show the hostname that in this case is the private ip of each.
+- AWS ELB for Applications with a listener on 80 port and tharget group targeting to two AWS EC2 instances
+- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering) and public ip just for pourpose to his challenge to access on each instace without a private vpn connection.
+- Each instance have a ningx server running in docker container with a custom content. Just for the pourpose of this challenge each instance show the hostname that in this case is the private ip of each.
+- A security group to allow only the http and ssh connections
 
+It configuration that is easy to create with the execution steps in the next topic, have a special bash script that start the instalation and configuration for the web server.
+
+As part of the EC2 start have a script (makeserver.sh) with each step to install and configure the docker system, download the nginx image for docker, configuring ports and volumes to store the custome web content.
+
+It script left a installation log on /var/log with the name of **infra_install.log** that we could check in two way:
+
+1. Make a ssh conection to each EC2 instance and check specifically the log in the path mentioned on top.
+
+2. Using the load balance dns provide in the finalization of the infrastructure configuration (check execution steps) and put the name of the log after the dns and it will be donwloaded (http://<load balancer dns\>/infra_install.log). Taking in count that donwloaded log is for a EC2 that response back the load balancer request.
 
 
 #### **Execution** ####
