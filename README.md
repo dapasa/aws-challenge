@@ -2,7 +2,7 @@
 
 ### **Challenge:**
 
-Create a web page in a Nginx server alocated in AWS public segment. This web page just need show a simple message.
+Create a web page in a Nginx server located in AWS public segment. This web page just need show a simple message.
 
 Create a checker script for health check. 
 
@@ -11,7 +11,7 @@ Create a checker script for health check.
 - Runing over NGINX web server (Required)
 - Make documentation for each step
 - Automate with CloudFormation (Optional)
-- Use Configuration managemente tool (like Puppet, Chef or Ansible) (Optional)
+- Use Configuration management tool (like Puppet, Chef or Ansible) (Optional)
 - Load Balancer configuration (Optional)
 - Run the NGINX server with docker system (Optional)
 
@@ -30,7 +30,7 @@ Trying to cover the most of the required items, it was designed with the bellow 
 - AWS internet gateway to point the inbound traffic to the VPC
 - AWS VPC with two availability zones and two public subnets (assigned one per each zone)
 - AWS ELB for Applications with a listener on 80 port and target group targeting to two AWS EC2 instances
-- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering). Each instace have a public ip address. This was configured with public ip only for the purpose of this challenge to access on each instace without a private vpn connection.
+- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering). Each instance have a public ip address. This was configured with public ip only for the purpose of this challenge to access on each instance without a private vpn connection.
 - Each instance have a ningx server running in docker container with a custom content. Just for the purpose of this challenge each instance shows the hostname that in this case is the private ip of each one.
 - A security group to allow only the http and ssh connections
 
