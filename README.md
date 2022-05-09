@@ -11,34 +11,34 @@ Create a checker script for health check.
 - Runing over NGINX web server (Required)
 - Make documentation for each step
 - Automate with CloudFormation (Optional)
-- Use Configuration managemente tool (Puppet, Chef or Ansible) (Optional)
+- Use Configuration managemente tool (like Puppet, Chef or Ansible) (Optional)
 - Load Balancer configuration (Optional)
-- Run the NGINX server un dockerization (Optional)
+- Run the NGINX server with docker system (Optional)
 
 ### **Prerequisites**:
 
 * [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started)
 * [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-* AWS Account - It will provide for the Author of it
+* AWS Account - It will provide by email to the requestor
 
 ### **Infrastructure design and execution:**
 
 #### **Design** ####
 
-Trying to cover the most of the required items, it was designed with the bellow configuration. I will describe it in the bellow list in order from the frontend (internet) to the backend (nginx server):
+Trying to cover the most of the required items, it was designed with the bellow configuration. I will describe in order from the frontend (internet) to the backend (nginx server):
 
-- One AWS internet gateway to point the inbound traffic to the VPC
+- AWS internet gateway to point the inbound traffic to the VPC
 - AWS VPC with two availability zones and two public subnets (assigned one per each zone)
-- AWS ELB for Applications with a listener on 80 port and tharget group targeting to two AWS EC2 instances
-- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering) and public ip just for pourpose to his challenge to access on each instace without a private vpn connection.
-- Each instance have a ningx server running in docker container with a custom content. Just for the pourpose of this challenge each instance show the hostname that in this case is the private ip of each.
+- AWS ELB for Applications with a listener on 80 port and target group targeting to two AWS EC2 instances
+- Two AWS EC2 instances with Ubuntu Server 20.04 (AMI for free tier offering). Each instace have a public ip address. This was configured with public ip only for the purpose of this challenge to access on each instace without a private vpn connection.
+- Each instance have a ningx server running in docker container with a custom content. Just for the purpose of this challenge each instance shows the hostname that in this case is the private ip of each one.
 - A security group to allow only the http and ssh connections
 
-It configuration that is easy to create with the execution steps in the next topic, have a special bash script that start the instalation and configuration for the web server.
+this configuration that is easy to create with the execution steps described in the next topic, have a special bash script that starts the instalation and configuration for the web server.
 
-As part of the EC2 start have a script (makeserver.sh) with each step to install and configure the docker system, download the nginx image for docker, configuring ports and volumes to store the custome web content.
+On the EC2 start, a script (makeserver.sh) is added. this script have each step to install and configure the docker system. Download the nginx image for docker, configuring ports and volumes to store the custome web content.
 
-It script left a installation log on /var/log with the name of **infra_install.log** that we could check in two way:
+It script make a installation log on /var/log with the name of **infra_install.log** that we could check in two way:
 
 1. Make a ssh conection to each EC2 instance and check specifically the log in the path mentioned on top.
 
@@ -47,7 +47,7 @@ It script left a installation log on /var/log with the name of **infra_install.l
 
 #### **Execution** ####
 
-In base of start to execute the infrastrcture configuration is required first set the AWS credentials
+In base of start to execute the infrastructure configuration is required first set the AWS credentials
 
 To start the AWS credentials configurations run:
 
@@ -58,8 +58,8 @@ The aws configuration will ask you enter bellow information:
 
 - AWS Access Key ID - Acces Key ID downloaded from the user account
 - AWS Secret Access Key - Secret key downloaded from the user account
-- Default region name - For the pourpose of this challenge it is recomended to use **es-east-1** region
-- Default output format - For the pourpose of this challenge it is recomended to use **json** format
+- Default region name - For the purpose of this challenge it is recomended to use **es-east-1** region
+- Default output format - For the purpose of this challenge it is recomended to use **json** format
 
 ```bash
 AWS Access Key ID [None]:
@@ -187,10 +187,10 @@ Checking the finished status you could see the **albdns** that is the public dns
 
 #### **Design** ####
 
-The watchdog scripts have a simple functionality. A simple execution of curl command with the check on the status of the response. The check is base on check the time out, the succes and redirect, and finaly if the execution not reach any site it will fail.
+The watchdog scripts have a simple functionality. A simple execution of curl command with the check on the status of the response. The check is base on check the time out, the success and redirect, and finally if the execution not reach any site it will fail.
 These scripts are ready for windows and linux systems.
 
-When the scripts are executed these, will resquest to enter the url and the time beetwen each curl execution.
+When the scripts are executed these, will request to enter the url and the time between each curl execution.
 
 In the execution the scripts not left logs in the machine or server that are executed. It is because these scripts are designed to be attached in some linux service or in the windows start. With that configuration in the operating system the script output could be redirect to a log for register each execution.
 
@@ -203,13 +203,13 @@ On **Linux** systems you need open a terminal console and if you have by default
 ```bash
 ./watchdog.sh
 ```
-and if you have by defaul other shell in your linux, you could execute in this way:
+and if you have by default other shell in your linux, you could execute in this way:
 
 ```bash
 sh ./watchdog.sh
 ```
 
-The exuection will resquest to enter the url and the time beetwen each curl
+The execution will resquest to enter the url and the time between each curl
 
 ```bash
 ### Running Watchdog ###
@@ -219,7 +219,7 @@ Enter time to wait between check (in seconds)
 5
 ```
 
-If the url is reacheble (http response: 200 or 301) the message will be:
+If the url is reachable (http response: 200 or 301) the message will be:
 
 ```bash
 **********************************************************
