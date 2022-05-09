@@ -142,7 +142,7 @@ Only 'yes' will be accepted to approve.
 
   Enter a value: yes
 ```
-As the confirmation message said, you just need to enter "yes" word. Any other thing written will cancel the execution.
+As the confirmation message said, you just need to enter "yes" word. Any other word written will cancel the execution.
 
 Once it finish the execution you will see the finished status:
 
@@ -151,10 +151,13 @@ Apply complete! Resources: 26 added, 0 changed, 0 destroyed
 
 Outputs:
 
-albdns = "alb-1284204067.us-east-1.elb.amazonaws.com"
+albdns = "alb-1706445521.us-east-1.elb.amazonaws.com"
 ec2_instance_ids = 2
 ```
 
+Checking the finished status you could see the **albdns** that is the public dns for the application. puting it in a browser it will show the bellow information:
 
+![webImage.png](image/README/webImage.png)
 
 ### **Checker Script Execution:**
+
