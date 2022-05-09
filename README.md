@@ -38,7 +38,7 @@ this configuration that is easy to create with the execution steps described in 
 
 On the EC2 start, a script (makeserver.sh) is added. this script have each step to install and configure the docker system. Download the nginx image for docker, configuring ports and volumes to store the custome web content.
 
-It script make a installation log on /var/log with the name of **infra_install.log** that we could check in two way:
+It script make a installation log on /var/log with the name of **infra_install.log** that we could check in two ways:
 
 1. Make a ssh conection to each EC2 instance and check specifically the log in the path mentioned on top.
 
