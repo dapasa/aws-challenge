@@ -1,7 +1,6 @@
 #!/bin/dash
 
 #Settings variables from parameters
-echo "### Running Watchdog ###"
 echo "Enter url to check"
 read url
 echo "Enter time to wait between check (in seconds)"

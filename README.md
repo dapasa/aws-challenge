@@ -21,7 +21,12 @@ Create a checker script for health check.
 * [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 * AWS Account - It will provide for the Author of it
 
-### **Infrastructure configuration:**
+### **Infrastructure design and execution:**
+
+#### **Design** ####
+
+
+#### **Execution** ####
 
 In base of start to execute the infrastrcture configuration is required first set the AWS credentials
 
@@ -159,5 +164,67 @@ Checking the finished status you could see the **albdns** that is the public dns
 
 ![webImage.png](image/README/webImage.png)
 
-### **Checker Script Execution:**
+### **Checker Script**
 
+#### **Design** ####
+
+The watchdog scripts have a simple functionality. A simple execution of curl command with the check on the status of the response. The check is base on check the time out, the succes and redirect, and finaly if the execution not reach any site it will fail.
+These scripts are ready for windows and linux systems.
+
+When the scripts are executed these, will resquest to enter the url and the time beetwen each curl execution.
+
+In the execution the scripts not left logs in the machine or server that are executed. It is because these scripts are designed to be attached in some linux service or in the windows start. With that configuration in the operating system the script output could be redirect to a log for register each execution.
+
+#### **Execution** ####
+
+As a scripts these have a simple execution.
+
+On **Linux** systems you need open a terminal console and if you have by default the **sh** command you can execute it in this way:
+
+```bash
+./watchdog.sh
+```
+and if you have by defaul other shell in your linux, you could execute in this way:
+
+```bash
+sh ./watchdog.sh
+```
+
+The exuection will resquest to enter the url and the time beetwen each curl
+
+```bash
+### Running Watchdog ###
+Enter url to check
+alb-1706445521.us-east-1.elb.amazonaws.com
+Enter time to wait between check (in seconds)
+5
+```
+
+If the url is reacheble (http response: 200 or 301) the message will be:
+
+```bash
+**********************************************************
+Status code: 200
+Request success
+**********************************************************
+**********************************************************
+Status code: 301
+Request success
+**********************************************************
+```
+For time out, the displayed code is the curl return code:
+
+```bash
+**********************************************************
+Status code: 28 - time out
+Request failed
+**********************************************************
+```
+and finaly if the url are not reacheble the execution will show:
+
+```bash
+**********************************************************
+Status code: 404
+Request failed
+**********************************************************
+```

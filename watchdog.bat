@@ -1,7 +1,6 @@
 @ECHO OFF
 
 REM Settings variables from parameters
-echo "### Running Watchdog ###"
 echo "Enter url to check"
 set /p url="URL: "
 echo "Enter time to wait between check (in seconds)"
